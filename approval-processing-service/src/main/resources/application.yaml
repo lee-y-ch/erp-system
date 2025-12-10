@@ -1,0 +1,29 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: approval-processing-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: approval-group-v2 # 컨슈머 그룹 ID
+      auto-offset-reset: latest # 최신부터 읽기
+      # 역직렬화(Deserialization) 설정
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # JSON 변환 시 신뢰할 수 있는 패키지 설정
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.erp.approval.processing.document.ApprovalRequestDoc
+
+grpc:
+  server:
+    port: 9090
+    security:
+      enabled: false
+  client:
+    approval-request-service:
+      address: static://localhost:9091
+      negotiation-type: plaintext

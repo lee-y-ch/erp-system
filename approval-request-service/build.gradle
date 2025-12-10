@@ -1,0 +1,76 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.8'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.google.protobuf' version '0.9.4'
+}
+
+group = 'com.erp'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// gRPC & Protobuf 의존성 추가
+	implementation 'net.devh:grpc-spring-boot-starter:3.1.0.RELEASE' // Spring Boot용 gRPC 스타터
+	implementation 'io.grpc:grpc-netty-shaded:1.63.0'
+	implementation 'io.grpc:grpc-protobuf:1.63.0'
+	implementation 'io.grpc:grpc-stub:1.63.0'
+	compileOnly 'org.apache.tomcat:annotations-api:6.0.53' // gRPC 생성 코드용
+
+	implementation 'org.springframework.kafka:spring-kafka'
+}
+
+// .proto 파일을 컴파일해서 자바 코드로 변환하는 설정
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:3.25.1"
+	}
+	plugins {
+		grpc {
+			artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
+		}
+	}
+	generateProtoTasks {
+		all()*.plugins {
+			grpc {}
+		}
+	}
+}
+
+//생성된 gRPC 코드를 소스 경로로 인식하게 설정
+sourceSets {
+	main {
+		java {
+			srcDirs 'src/main/java'
+			srcDirs 'build/generated/source/proto/main/grpc'
+			srcDirs 'build/generated/source/proto/main/java'
+		}
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

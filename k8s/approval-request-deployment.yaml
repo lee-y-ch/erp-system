@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: approval-request-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: approval-request-service
+  template:
+    metadata:
+      labels:
+        app: approval-request-service
+    spec:
+      containers:
+        - name: approval-request-service
+          image: leeych1745/approval-request-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082 # HTTP
+            - containerPort: 9091 # gRPC
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://mongo-service:27017/approval_db"
+            - name: GRPC_CLIENT_APPROVAL_PROCESSING_SERVICE_ADDRESS
+              value: "static://approval-processing-service:9090" # Processing 서비스 이름 사용
+            - name: NOTIFICATION_SERVICE_URL
+              value: "http://notification-service:8084/notify" # Notification 서비스 이름 사용
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: approval-request-service
+spec:
+  type: NodePort
+  selector:
+    app: approval-request-service
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 8082
+      nodePort: 30082 # 외부 접속용
+    - name: grpc
+      port: 9091
+      targetPort: 9091

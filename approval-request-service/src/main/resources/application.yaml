@@ -1,0 +1,26 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: approval-request-service
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: approval_db
+      auto-index-creation: true
+  kafka:
+    bootstrap-servers: localhost:9092 # Kafka 서버 주소
+    producer:
+      # 메시지 키와 값을 직렬화(Serialization)하는 방식 설정
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+grpc:
+  server:
+    port: 9091
+  client:
+    approval-processing-service:
+      address: static://localhost:9090
+      negotiation-type: plaintext

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package approval;
+
+option java_multiple_files = true; // 클래스들을 별도 파일로 분리 (ApprovalRequest.java 등)
+option java_package = "approval";  // 생성될 자바 패키지명 지정
+option java_outer_classname = "ApprovalProto"; // 껍데기 클래스 이름 지정
+
+// Approval Processing Service와 통신하는 서비스 정의
+service Approval {
+  // 1. 결재 요청 정보를 Processing Service로 전달
+  rpc RequestApproval (ApprovalRequest) returns (ApprovalResponse);
+
+  // 2. Processing Service로부터 결재 결과를 전달받음
+  rpc ReturnApprovalResult(ApprovalResultRequest) returns (ApprovalResultResponse);
+}
+
+// 데이터 구조체 (Message) 정의
+
+message Step {
+  int32 step = 1;
+  int32 approverId = 2;
+  string status = 3; // pending, approved, rejected
+}
+
+message ApprovalRequest {
+  int32 requestId = 1;
+  int32 requesterId = 2;
+  string title = 3;
+  string content = 4;
+  repeated Step steps = 5; // List<Step>과 동일
+}
+
+message ApprovalResponse {
+  string status = 1; // "received" 등 처리 상태
+}
+
+message ApprovalResultRequest {
+  int32 requestId = 1;
+  int32 step = 2;
+  int32 approverId = 3;
+  string status = 4; // approved or rejected
+}
+
+message ApprovalResultResponse {
+  string status = 1;
+}
